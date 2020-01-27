@@ -1,18 +1,57 @@
+
+# Bayou ####
 library(dplyr)
 library(treeplyr)
 library(bayou)
+library(ggplot2)
 
-setwd("chain1/")
-mcmcOU<-readRDS("modelOU/mcmcOU.rds")
-chainOU<-mcmcOU$load()
+# Model comparison
+# One can fit a full model, all island together and if the posterior is over zero means that you can not regect a no effect
+models <- c("N1000", "N1100", "N1110", "N1111")
+path <- ("fixed_ou/")
+mar_Lik <- c()
+for(i in 1:length(models)){
+  file <- list.files(paste0(path, models[i]), pattern = "*ss.N", all.files = T)
+  mar_Lik[i] <- readRDS(paste0(path, models[i],"/", file))$lnr
+}
 
-#or
+mod_comp <- data.frame(models, mar_Lik)
+mod_comp$BF <-round(abs(2*(-1899.054-mod_comp$mar_Lik)), 2)
+best_mod <- "N1111"
 
-chainOU<-readRDS("chain1/modelOU/mcmcOU_chain.rds")
-chainOU<-set.burnin(chainOU, 0.3)
-summary(chainOU)
-plot(chainOU, auto.layout = FALSE)
+#
+chain.N1111 <- readRDS("fixed_ou/N1111/chain.N1111.rds")
+chain.N1111 <- set.burnin(chain.N1111, 0.3)
+sum_N1111 <- summary(chain.N1111)
+sum_N1111 <- readRDS("fixed_ou/N1111/sum_N1111.rds")
+sum_N1111$statistics
 
-plotSimmap.mcmc(chainOU, burnin = 0.3, pp.cutoff = 0.3, cex = .1, type = "fan")
-plotBranchHeatMap(d_fruit_lg_ln$phy, chainOU, "theta", burnin = 0.3, pal = cm.colors, cex = .1, type = "fan")
-phenogram.density(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), burnin = 0.3, chainOU, pp.cutoff = 0.3)
+plot(chain.N1111, auto.layout = FALSE)
+
+# regression values
+tab_sum <- data.frame(x = c("sunda", "sulawesi", "malaku", "newguinea"),
+           beta = sum_N1111$statistics[c("beta_sunda", "beta_sulawesi", "beta_maluku", "beta_newguinea"),"Mean"],
+           sd = sum_N1111$statistics[c("beta_sunda", "beta_sulawesi", "beta_maluku", "beta_newguinea"),"SD"],
+           hpdL = sum_N1111$statistics[c("beta_sunda", "beta_sulawesi", "beta_maluku", "beta_newguinea"),"HPD95Lower"],
+           hpdU = sum_N1111$statistics[c("beta_sunda", "beta_sulawesi", "beta_maluku", "beta_newguinea"),"HPD95Upper"])
+
+ggplot(tab_sum, aes(x = x, y = beta)) + geom_point() +
+  geom_errorbar(aes(ymin = hpdL, ymax = hpdU), width = .2) + theme_classic() + theme(legend.position = "none") + 
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") + 
+  labs(x = "", y = "Island Effect (β)")
+
+plotBranchHeatMap(d_fruit_lg_ln$phy, chain.N1111, "alpha", pal = cm.colors, cex = .1)
+plotBranchHeatMap(d_fruit_lg_ln$phy, chain.N1111, "beta_newguinea", pal = cm.colors, cex = .1)
+
+# l1ou ####
+library(dplyr)
+library(treeplyr)
+library(genlasso)
+library(l1ou)
+library(geiger)
+library(phytools)
+
+e.Model<-readRDS("nl1ou/output/eModel.rds")
+eModel_boot_sup<-readRDS("nl1ou/output/eModel_boot_sup.rds")
+eModel_c<-readRDS("nl1ou/output/eModel_c.rds")
+eMode_cd<-readRDS("nl1ou/output/eModel_cd.rds")
