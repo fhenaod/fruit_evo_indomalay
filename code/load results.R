@@ -35,10 +35,12 @@ tab_sum <- data.frame(x = c("sunda", "sulawesi", "malaku", "newguinea"),
            hpdL = sum_N1111$statistics[c("beta_sunda", "beta_sulawesi", "beta_maluku", "beta_newguinea"),"HPD95Lower"],
            hpdU = sum_N1111$statistics[c("beta_sunda", "beta_sulawesi", "beta_maluku", "beta_newguinea"),"HPD95Upper"])
 
+png("res_model.png", width = 900, height = 900, bg = "transparent", res = 250)
 ggplot(tab_sum, aes(x = x, y = beta)) + geom_point() +
   geom_errorbar(aes(ymin = hpdL, ymax = hpdU), width = .2) + theme_classic() + theme(legend.position = "none") + 
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") + 
   labs(x = "", y = "Island Effect (β)")
+dev.off()
 
 plotBranchHeatMap(d_fruit_lg_ln$phy, chain.N1111, "alpha", pal = cm.colors, cex = .1)
 plotBranchHeatMap(d_fruit_lg_ln$phy, chain.N1111, "beta_newguinea", pal = cm.colors, cex = .1)
