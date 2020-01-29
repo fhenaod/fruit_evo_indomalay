@@ -49,7 +49,10 @@ D.XNX <- function(nrj) list(alpha = 0.7, sig2 = 0.5, beta_sunda = 0.2, beta_sula
 # Code explanation. 5 numbers given either: R - RJ; N - Fixed multiple; 1 - Fixed global; 0 - Absent
 # 1:β0; 2: β_sunda; 3: β_sulawesi; 4: β_maluku; 5: β_newguinea 
 
-## rj inter & sunda: RR000 ####
+gens <- 10000
+
+## RJ intercept & slope ####
+# intercept and sunda
 prior.RR000 <- make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE, 
                           dists = list(dalpha = "dhalfcauchy", dsig2 = "dhalfcauchy", 
                                        dbeta_sunda = "dnorm",
@@ -61,24 +64,51 @@ prior.RR000 <- make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE,
                                        dbeta_sunda = par.beta_sunda, sd = sd2, # regresion coeff. "dbeta_predictor"
                                        dk = par.k, dsb = par.sb, dtheta = par.theta)
                           )
+
 model.RR000 <- makeBayouModel(ln_fruit_lg ~ sunda, rjpars = c("theta", "sunda"), tree = d_fruit_lg_ln$phy,  
                               dat = getVector(d_fruit_lg_ln, ln_fruit_lg),
                               pred = d_fruit_lg_ln$dat, prior.RR000, D = D.XXX(2))
+
 prior.RR000(model.RR000$startpar)
 model.RR000$model$lik.fn(model.RR000$startpar, cache, cache$dat)$loglik
 
-mod <- "RR000"
-gens <- 10000
-mymcmc <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), pred = d_fruit_lg_ln$dat, 
+mcmc.RR000 <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), 
+                         pred = select(d_fruit_lg_ln$dat, c(sunda)), 
                        model = model.RR000, prior = prior.RR000, startpar = model.RR000$startpar,
-                       new.dir = TRUE, outname = paste(mod, "run1", sep = "_"), plot.freq = NULL, 
+                       new.dir = TRUE, outname = paste(mod, "r1", sep = "_"), plot.freq = NULL, 
                        ticker.freq = 2000, samp = 200)
-mymcmc$run(gens)
+mcmc.RR000$run(gens)
 
-## Separate intercepts ####
-gens <- 10000
+## reversable intercept fixed sunda
+prior.R1000 <- make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE, 
+                          dists = list(dalpha = "dhalfcauchy", dsig2 = "dhalfcauchy", 
+                                       dbeta_sunda = "dnorm",
+                                       #dbeta_sulawesi = "dnorm",
+                                       #dbeta_maluku = "dnorm",
+                                       #dbeta_newguinea = "dnorm",
+                                       dsb = "dsb", dk = "cdpois", dtheta = "dnorm"), 
+                          param = list(dalpha = par.alpha, dsig2 = par.sig2,
+                                       dbeta_sunda = par.beta_sunda, sd = sd2, # regresion coeff. "dbeta_predictor"
+                                       dk = par.k, dsb = par.sb, dtheta = par.theta)
+)
+
+model.R1000 <- makeBayouModel(ln_fruit_lg ~ sunda, rjpars = c("theta"), tree = d_fruit_lg_ln$phy,  
+                              dat = getVector(d_fruit_lg_ln, ln_fruit_lg),
+                              pred = d_fruit_lg_ln$dat, prior.R1000, D = D.XXX(1))
+
+prior.R1000(model.R1000$startpar)
+model.R1000$model$lik.fn(model.R1000$startpar, cache, cache$dat)$loglik
+
+mcmc.R1000 <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), 
+                             pred = select(d_fruit_lg_ln$dat, c(sunda)), 
+                             model = model.R1000, prior = prior.R1000, startpar = model.R1000$startpar,
+                             new.dir = TRUE, outname = paste(mod, "r1", sep = "_"), plot.freq = NULL, 
+                             ticker.freq = 2000, samp = 200)
+mcmc.R1000$run(gens)
+
+## Simple regression ####
 # sunda
-prior.N1000 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE, 
+prior.11000 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE, 
                            dists = list(dalpha = "dhalfcauchy", dsig2 = "dhalfcauchy", 
                                         dbeta_sunda = "dnorm",
                                         #dbeta_sulawesi = "dnorm",
@@ -88,29 +118,42 @@ prior.N1000 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE,
                            param = list(dalpha = par.alpha, dsig2 = par.sig2,
                                         dbeta_sunda = par.beta_sunda,
                                         #dbeta_sulawesi = par.beta_sulawesi,
-                                        #dbeta_maluku = par.beta_maluku, 
+                                        #dbeta_maluku = par.beta_maluku,
+                                        #dbeta_newguinea = par.beta_newguinea,
                                         dk = "fixed", dsb = "fixed", 
                                         dtheta = par.theta),
                            fixed = list(k = 0, sb = numeric(0), t2=numeric(0), loc = numeric(0))
 )
 
-model.N1000 <- makeBayouModel(ln_fruit_lg ~ sunda, rjpars = NULL, tree = d_fruit_lg_ln$phy,
+model.11000 <- makeBayouModel(ln_fruit_lg ~ sunda, rjpars = numeric(0), tree = d_fruit_lg_ln$phy,
                               dat = getVector(d_fruit_lg_ln, ln_fruit_lg), pred = select(d_fruit_lg_ln$dat, sunda),
-                              prior = prior.N1000, impute = NULL, D = D.XXX(1))
+                              prior = prior.11000, impute = NULL, D = D.1XX(1))
 
-prior.N1000(model.N1000$startpar)
-model.N1000$model$lik.fn(model.N1000$startpar, cache, cache$dat)$loglik
+prior.11000(model.11000$startpar)
+model.11000$model$lik.fn(model.11000$startpar, cache, cache$dat)$loglik
 
-mymcmc <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), 
+mcmc.11000 <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), 
                          pred = select(d_fruit_lg_ln$dat, c(sunda)), 
-                         model = model.N1000$model, prior = prior.N1000, startpar = model.N1000$startpar, 
-                         new.dir = "mod_N1000/", outname = "N1000_r1", plot.freq = NULL, 
+                         model = model.11000$model, prior = prior.11000, startpar = model.11000$startpar, 
+                         new.dir = "mod_11000/", outname = "11000_r1", plot.freq = NULL, 
                          ticker.freq = 2000, samp = 200, perform.checks = T)
-mymcmc$run(gens)
+saveRDS(mcmc.11000, file = "mcmc.11000.rds")
 
+mcmc.11000$run(gens)
+chain.N1100 <- mcmc.11000$load()
+chain.11000 <- set.burnin(chain.11000, .3)
+saveRDS(chain.11000, file = "chain.11000.rds")
+
+require(foreach)
+require(doParallel)
+registerDoParallel(cores = 25)
+Bk <- qbeta(seq(0,1, length.out = 30),.3, 1)
+ss.11000 <- mcmc.11000$steppingstone(gens, chain.11000, Bk = Bk, plot = F)
+saveRDS(ss.11000, file = "ss.11000.rds")
+print(ss.11000$lnr)
 
 # sunda + sulawesi 
-prior.N1100 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE, 
+prior.11100 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE, 
                            dists = list(dalpha = "dhalfcauchy", dsig2 = "dhalfcauchy", 
                                         dbeta_sunda = "dnorm",
                                         dbeta_sulawesi = "dnorm",
@@ -120,28 +163,29 @@ prior.N1100 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE,
                            param = list(dalpha = par.alpha, dsig2 = par.sig2,
                                         dbeta_sunda = par.beta_sunda,
                                         dbeta_sulawesi = par.beta_sulawesi,
-                                        #dbeta_maluku = par.beta_maluku, 
+                                        #dbeta_maluku = par.beta_maluku,
+                                        #dbeta_newguinea = par.beta_newguinea,
                                         dk = "fixed", dsb = "fixed", 
                                         dtheta = par.theta),
                            fixed = list(k = 0, sb = numeric(0), t2=numeric(0), loc = numeric(0))
 )
 
-model.N1100 <- makeBayouModel(ln_fruit_lg ~ sunda + sulawesi, rjpars = NULL, tree = d_fruit_lg_ln$phy,
+model.11100 <- makeBayouModel(ln_fruit_lg ~ sunda + sulawesi, rjpars = NULL, tree = d_fruit_lg_ln$phy,
                             dat = getVector(d_fruit_lg_ln, ln_fruit_lg), pred = select(d_fruit_lg_ln$dat, sunda, sulawesi),
-                            prior = prior.N1100, impute = NULL, D = D.XXX(1))
+                            prior = prior.11100, impute = NULL, D = D.1XX(1))
 
-prior.N1100(model.N1100$startpar)
-model.N1100$model$lik.fn(model.N1100$startpar, cache, cache$dat)$loglik
+prior.11100(model.11100$startpar)
+model.11100$model$lik.fn(model.11100$startpar, cache, cache$dat)$loglik
 
-mymcmc <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), 
+mcmc.11100 <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), 
                          pred = select(d_fruit_lg_ln$dat, c(sunda, sulawesi)), 
-                         model = model.N1100$model, prior = prior.N1100, startpar = model.N1100$startpar, 
-                         new.dir = "mod_N1100/", outname = "N1100_r1", plot.freq = NULL, 
+                         model = model.11100$model, prior = prior.11100, startpar = model.11100$startpar, 
+                         new.dir = "mod_11100/", outname = "11100_r1", plot.freq = NULL, 
                          ticker.freq = 2000, samp = 200, perform.checks = T)
-mymcmc$run(gens)
+mcmc.11100$run(gens)
 
 # sunda + sulawesi + maluku 
-prior.N1110 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE, 
+prior.11110 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE, 
                            dists = list(dalpha = "dhalfcauchy", dsig2 = "dhalfcauchy", 
                                         dbeta_sunda = "dnorm",
                                         dbeta_sulawesi = "dnorm",
@@ -158,21 +202,22 @@ prior.N1110 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE,
                            fixed = list(k = 0, sb = numeric(0), t2=numeric(0), loc = numeric(0))
 )
 
-model.N1110 <- makeBayouModel(ln_fruit_lg ~ sunda + sulawesi + maluku, rjpars = NULL, tree = d_fruit_lg_ln$phy,
+model.11110 <- makeBayouModel(ln_fruit_lg ~ sunda + sulawesi + maluku, rjpars = NULL, tree = d_fruit_lg_ln$phy,
                               dat = getVector(d_fruit_lg_ln, ln_fruit_lg), pred = select(d_fruit_lg_ln$dat, sunda, sulawesi, maluku),
-                              prior = prior.N1110, impute = NULL, D = D.XXX(1))
+                              prior = prior.11110, impute = NULL, D = D.1XX(1))
 
-prior.N1110(model.N1110$startpar)
-model.N1110$model$lik.fn(model.N1110$startpar, cache, cache$dat)$loglik
+prior.11110(model.11110$startpar)
+model.11110$model$lik.fn(model.11110$startpar, cache, cache$dat)$loglik
 
-mymcmc <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), 
+mcmc.11110 <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), 
                          pred = select(d_fruit_lg_ln$dat, c(sunda, sulawesi, maluku)), 
-                         model = model.N1110$model, prior = prior.N1110, startpar = model.N1110$startpar, 
-                         new.dir = "mod_N1110/", outname = "N1110_r1", plot.freq = NULL, 
+                         model = model.11110$model, prior = prior.11110, startpar = model.11110$startpar, 
+                         new.dir = "mod_11110/", outname = "11110_r1", plot.freq = NULL, 
                          ticker.freq = 2000, samp = 200, perform.checks = T)
-mymcmc$run(gens)
+mcmc.11110$run(gens)
+
 # sunda + sulawesi + maluku + newguinea
-prior.N1111 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE, 
+prior.11111 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE, 
                            dists = list(dalpha = "dhalfcauchy", dsig2 = "dhalfcauchy", 
                                         dbeta_sunda = "dnorm",
                                         dbeta_sulawesi = "dnorm",
@@ -189,16 +234,86 @@ prior.N1111 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE,
                            fixed = list(k = 0, sb = numeric(0), t2=numeric(0), loc = numeric(0))
 )
 
-model.N1111 <- makeBayouModel(ln_fruit_lg ~ sunda + sulawesi + maluku + newguinea, rjpars = NULL, tree = d_fruit_lg_ln$phy,
+model.11111 <- makeBayouModel(ln_fruit_lg ~ sunda + sulawesi + maluku + newguinea, rjpars = NULL, tree = d_fruit_lg_ln$phy,
                               dat = getVector(d_fruit_lg_ln, ln_fruit_lg), pred = select(d_fruit_lg_ln$dat, sunda, sulawesi, maluku, newguinea),
-                              prior = prior.N1111, impute = NULL, D = D.XXX(1))
+                              prior = prior.11111, impute = NULL, D = D.1XX(1))
 
-prior.N1111(model.N1111$startpar)
-model.N1111$model$lik.fn(model.N1111$startpar, cache, cache$dat)$loglik
+prior.11111(model.11111$startpar)
+model.11111$model$lik.fn(model.11111$startpar, cache, cache$dat)$loglik
 
-mymcmc <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), 
+mcmc.11111 <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), 
                          pred = select(d_fruit_lg_ln$dat, c(sunda, sulawesi, maluku, newguinea)), 
-                         model = model.N1111$model, prior = prior.N1111, startpar = model.N1111$startpar, 
-                         new.dir = "mod_N1111/", outname = "N1111_r1", plot.freq = NULL, 
+                         model = model.11111$model, prior = prior.11111, startpar = model.11111$startpar, 
+                         new.dir = "mod_11111/", outname = "11111_r1", plot.freq = NULL, 
                          ticker.freq = 2000, samp = 200, perform.checks = T)
-mymcmc$run(gens)
+mcmc.11111$run(gens)
+
+# newguinea 
+prior.10001 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE,
+                           dists = list(dalpha = "dhalfcauchy", dsig2 = "dhalfcauchy",
+                                        # dbeta_sunda = "dnorm",
+                                        #dbeta_sulawesi = "dnorm",
+                                        #dbeta_maluku = "dnorm",
+                                        dbeta_newguinea = "dnorm",
+                                        dsb = "fixed", dk = "fixed", dtheta = "dnorm"),
+                           param = list(dalpha = par.alpha, dsig2 = par.sig2,
+                                        # dbeta_sunda = par.beta_sunda,
+                                        # dbeta_sulawesi = par.beta_sulawesi,
+                                        #dbeta_maluku = par.beta_maluku,
+                                        dbeta_newguinea = par.beta_newguinea,
+                                        dk = "fixed", dsb = "fixed",
+                                        dtheta = par.theta),
+                           fixed = list(k = 0, sb = numeric(0), t2=numeric(0), loc = numeric(0))
+)
+
+model.10001 <- makeBayouModel(ln_fruit_lg ~ newguinea, rjpars = NULL, tree = d_fruit_lg_ln$phy,
+                              dat = getVector(d_fruit_lg_ln, ln_fruit_lg),
+                              pred = select(d_fruit_lg_ln$dat, newguinea),
+                              prior = prior.10001, impute = NULL, D = D.1XX(1))
+
+prior.10001(model.10001$startpar)
+model.10001$model$lik.fn(model.10001$startpar, cache, cache$dat)$loglik
+
+mcmc.10001 <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg),
+                             pred = select(d_fruit_lg_ln$dat, c( newguinea)),
+                             model = model.10001$model, prior = prior.10001, startpar = model.10001$startpar,
+                             new.dir = "mod_10001/", outname = "10001_r1", plot.freq = NULL,
+                             ticker.freq = 2000, samp = 200, perform.checks = T)
+mcmc.10001$run(gens)
+
+## Separate slope ####
+# sunda
+prior.1N000 <-  make.prior(d_fruit_lg_ln$phy, plot.prior = FALSE, 
+                           dists = list(dalpha = "dhalfcauchy", dsig2 = "dhalfcauchy", 
+                                        dbeta_sunda = "dnorm",
+                                        #dbeta_sulawesi = "dnorm",
+                                        #dbeta_maluku = "dnorm",
+                                        #dbeta_newguinea = "dnorm",
+                                        dsb = "fixed", dk = "fixed", dtheta = "dnorm"), 
+                           param = list(dalpha = par.alpha, dsig2 = par.sig2,
+                                        dbeta_sunda = par.beta_sunda,
+                                        #dbeta_sulawesi = par.beta_sulawesi,
+                                        #dbeta_maluku = par.beta_maluku,
+                                        #dbeta_newguinea = par.beta_newguinea,
+                                        dk = "fixed", dsb = "fixed", 
+                                        dtheta = par.theta),
+                           fixed = list(k = 0, sb = numeric(0), t2=numeric(0), loc = numeric(0))
+)
+
+model.1N000 <- makeBayouModel(ln_fruit_lg ~ sunda, rjpars = c("sunda"), tree = d_fruit_lg_ln$phy,
+                              dat = getVector(d_fruit_lg_ln, ln_fruit_lg),
+                              pred = select(d_fruit_lg_ln$dat, sunda),
+                              prior = prior.1N000, impute = NULL, D = D.XNX(1))
+
+prior.1N000(model.1N000$startpar)
+model.1N000$model$lik.fn(model.1N000$startpar, cache, cache$dat)$loglik
+
+mcmc.1N000 <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_fruit_lg), 
+                         pred = select(d_fruit_lg_ln$dat, c(sunda)), 
+                         model = model.1N000$model, prior = prior.1N000, startpar = model.1N000$startpar, 
+                         new.dir = "mod_1N000/", outname = "1N000_r1", plot.freq = NULL, 
+                         ticker.freq = 2000, samp = 200, perform.checks = T)
+mcmc.1N000$run(gens)
+chain.1N000 <- mcmc.1N000$load()
+summary(chain.1N000)
+shiftSummaries(chain.1N000, mcmc.1N000)
