@@ -7,8 +7,12 @@ library(ggplot2)
 
 # Model comparison
 # One can fit a full model, all island together and if the posterior is over zero means that you can not regect a no effect
-models <- c("N1000", "N1100", "N1110", "N1111")
-path <- ("fixed_ou/")
+path <- ("custom_models/")
+
+d <- list.files(path, all.files = T, include.dirs = T, recursive = T)
+files <- d[grep("ss.", d)]
+models <- unique(sapply(strsplit(files, "/"), "[[", 1))
+
 mar_Lik <- c()
 for(i in 1:length(models)){
   file <- list.files(paste0(path, models[i]), pattern = "*ss.N", all.files = T)
@@ -16,24 +20,26 @@ for(i in 1:length(models)){
 }
 
 mod_comp <- data.frame(models, mar_Lik)
-mod_comp$BF <-round(abs(2*(-1899.054-mod_comp$mar_Lik)), 2)
-best_mod <- "N1111"
+mod_comp$BF <-round(abs(2*(mod_comp$mar_Lik[which(max(mod_comp$mar_Lik)==mar_Lik)]-mod_comp$mar_Lik)), 2)
+mod_comp[which(max(mod_comp$BF)==mod_comp$BF),] # Best model
 
 #
-chain.N1111 <- readRDS("fixed_ou/N1111/chain.N1111.rds")
+chain.N1111 <- readRDS("custom_models/N1111/chain.N1111.rds")
 chain.N1111 <- set.burnin(chain.N1111, 0.3)
 sum_N1111 <- summary(chain.N1111)
-sum_N1111 <- readRDS("fixed_ou/N1111/sum_N1111.rds")
+sum_N1111 <- readRDS("custom_models/N1111/sum_N1111.rds")
 sum_N1111$statistics
 
 plot(chain.N1111, auto.layout = FALSE)
 
 # regression values
-tab_sum <- data.frame(x = c("sunda", "sulawesi", "malaku", "newguinea"),
-           beta = sum_N1111$statistics[c("beta_sunda", "beta_sulawesi", "beta_maluku", "beta_newguinea"),"Mean"],
-           sd = sum_N1111$statistics[c("beta_sunda", "beta_sulawesi", "beta_maluku", "beta_newguinea"),"SD"],
-           hpdL = sum_N1111$statistics[c("beta_sunda", "beta_sulawesi", "beta_maluku", "beta_newguinea"),"HPD95Lower"],
-           hpdU = sum_N1111$statistics[c("beta_sunda", "beta_sulawesi", "beta_maluku", "beta_newguinea"),"HPD95Upper"])
+par_names <- rownames(sum_N1111$statistics)[grep("beta_", rownames(sum_N1111$statistics))]
+x_names <- sapply(strsplit(par_names, "_"), "[[", 2)
+tab_sum <- data.frame(x = x_names,
+           beta = sum_N1111$statistics[par_names,"Mean"],
+           sd = sum_N1111$statistics[par_names,"SD"],
+           hpdL = sum_N1111$statistics[par_names,"HPD95Lower"],
+           hpdU = sum_N1111$statistics[par_names,"HPD95Upper"])
 
 png("res_model.png", width = 900, height = 900, bg = "transparent", res = 250)
 ggplot(tab_sum, aes(x = x, y = beta)) + geom_point() +
