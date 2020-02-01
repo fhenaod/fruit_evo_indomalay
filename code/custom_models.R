@@ -143,6 +143,8 @@ mcmc.11000$run(gens)
 chain.N1100 <- mcmc.11000$load()
 chain.11000 <- set.burnin(chain.11000, .3)
 saveRDS(chain.11000, file = "chain.11000.rds")
+sum_c11000 <- summary(chain.11000)
+saveRDS(sum_c11000, file = "sum.11000.rds")
 
 require(foreach)
 require(doParallel)
@@ -314,6 +316,3 @@ mcmc.1N000 <- bayou.makeMCMC(d_fruit_lg_ln$phy, getVector(d_fruit_lg_ln, ln_frui
                          new.dir = "mod_1N000/", outname = "1N000_r1", plot.freq = NULL, 
                          ticker.freq = 2000, samp = 200, perform.checks = T)
 mcmc.1N000$run(gens)
-chain.1N000 <- mcmc.1N000$load()
-summary(chain.1N000)
-shiftSummaries(chain.1N000, mcmc.1N000)

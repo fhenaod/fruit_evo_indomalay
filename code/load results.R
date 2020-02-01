@@ -29,6 +29,7 @@ chain.N1111 <- set.burnin(chain.N1111, 0.3)
 sum_N1111 <- summary(chain.N1111)
 sum_N1111 <- readRDS("custom_models/N1111/sum_N1111.rds")
 sum_N1111$statistics
+head(sum_N1111$branch.posteriors)
 
 plot(chain.N1111, auto.layout = FALSE)
 
