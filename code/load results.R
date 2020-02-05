@@ -19,39 +19,39 @@ for(i in 1:length(models)){
   mar_Lik[i] <- readRDS(paste0(path, models[i],"/", file))$lnr
 }
 
-mod_comp <- data.frame(models[1:length(mar_Lik)], mar_Lik)
+mod_comp <- data.frame(models = models[1:length(mar_Lik)], mar_Lik)
 mod_comp$BF <-round(abs(2*(mod_comp$mar_Lik[which(max(mod_comp$mar_Lik)==mar_Lik)]-mod_comp$mar_Lik)), 2)
 mod_comp[which(max(mod_comp$BF)==mod_comp$BF),] # Best model
 best_model <- mod_comp[which(max(mod_comp$BF)==mod_comp$BF),][1,1]
 #
 
-chain.N1111 <- readRDS(paste0(path, best_model, "/chain.", best_model, ".rds"))
-chain.N1111 <- set.burnin(chain.N1111, 0.3)
-sum_N1111 <- summary(chain.N1111)
-sum_N1111 <- readRDS(paste0(path, best_model, "/sum_", best_model, ".rds"))
-sum_N1111$statistics
-head(sum_N1111$branch.posteriors)
+chain.best <- readRDS(paste0(path, best_model, "/chain.", best_model, ".rds"))
+chain.best <- set.burnin(chain.best, 0.3)
+sum_best <- summary(chain.best)
+sum_best <- readRDS(paste0(path, best_model, "/sum_", best_model, ".rds"))
+sum_best$statistics
+head(sum_best$branch.posteriors)
 
-plot(chain.N1111, auto.layout = FALSE)
+plot(chain.best, auto.layout = FALSE)
 
 # regression values
-par_names <- rownames(sum_N1111$statistics)[grep("beta_", rownames(sum_N1111$statistics))]
+par_names <- rownames(sum_best$statistics)[grep("beta_", rownames(sum_best$statistics))]
 x_names <- sapply(strsplit(par_names, "_"), "[[", 2)
 tab_sum <- data.frame(x = x_names,
-           beta = sum_N1111$statistics[par_names,"Mean"],
-           sd = sum_N1111$statistics[par_names,"SD"],
-           hpdL = sum_N1111$statistics[par_names,"HPD95Lower"],
-           hpdU = sum_N1111$statistics[par_names,"HPD95Upper"])
+           beta = sum_best$statistics[par_names,"Mean"],
+           sd = sum_best$statistics[par_names,"SD"],
+           hpdL = sum_best$statistics[par_names,"HPD95Lower"],
+           hpdU = sum_best$statistics[par_names,"HPD95Upper"])
 
 png("res_model.png", width = 900, height = 900, bg = "transparent", res = 250)
 ggplot(tab_sum, aes(x = x, y = beta)) + geom_point() +
   geom_errorbar(aes(ymin = hpdL, ymax = hpdU), width = .2) + theme_classic() + theme(legend.position = "none") + 
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") + 
-  labs(x = "", y = "Island Effect (β)")
+  labs(subtitle = paste("Model:",best_model), x = "", y = "Island Effect (β)")
 dev.off()
 
-plotBranchHeatMap(d_fruit_lg_ln$phy, chain.N1111, "alpha", pal = cm.colors, cex = .1)
-plotBranchHeatMap(d_fruit_lg_ln$phy, chain.N1111, "beta_newguinea", pal = cm.colors, cex = .1)
+plotBranchHeatMap(d_fruit_lg_ln$phy, chain.best, "alpha", pal = cm.colors, cex = .1)
+plotBranchHeatMap(d_fruit_lg_ln$phy, chain.best, "beta_newguinea", pal = cm.colors, cex = .1)
 
 # l1ou ####
 library(dplyr)
