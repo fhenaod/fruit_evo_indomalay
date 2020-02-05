@@ -15,19 +15,20 @@ models <- unique(sapply(strsplit(files, "/"), "[[", 1))
 
 mar_Lik <- c()
 for(i in 1:length(models)){
-  file <- list.files(paste0(path, models[i]), pattern = "*ss.N", all.files = T)
+  file <- list.files(paste0(path, models[i]), pattern = "*ss.", all.files = T)
   mar_Lik[i] <- readRDS(paste0(path, models[i],"/", file))$lnr
 }
 
-mod_comp <- data.frame(models, mar_Lik)
+mod_comp <- data.frame(models[1:length(mar_Lik)], mar_Lik)
 mod_comp$BF <-round(abs(2*(mod_comp$mar_Lik[which(max(mod_comp$mar_Lik)==mar_Lik)]-mod_comp$mar_Lik)), 2)
 mod_comp[which(max(mod_comp$BF)==mod_comp$BF),] # Best model
-
+best_model <- mod_comp[which(max(mod_comp$BF)==mod_comp$BF),][1,1]
 #
-chain.N1111 <- readRDS("custom_models/N1111/chain.N1111.rds")
+
+chain.N1111 <- readRDS(paste0(path, best_model, "/chain.", best_model, ".rds"))
 chain.N1111 <- set.burnin(chain.N1111, 0.3)
 sum_N1111 <- summary(chain.N1111)
-sum_N1111 <- readRDS("custom_models/N1111/sum_N1111.rds")
+sum_N1111 <- readRDS(paste0(path, best_model, "/sum_", best_model, ".rds"))
 sum_N1111$statistics
 head(sum_N1111$branch.posteriors)
 
