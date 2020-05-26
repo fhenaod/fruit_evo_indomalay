@@ -1,4 +1,3 @@
-library(dplyr)
 library(treeplyr)
 library(bayou)
 library(phytools)
