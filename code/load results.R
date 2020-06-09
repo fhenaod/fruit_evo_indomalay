@@ -26,6 +26,7 @@ mod_comp %>% arrange((BF))
 best_model <- mod_comp[which(max(mod_comp$BF, na.rm = T)==mod_comp$BF),][1,1]
 #
 
+best_model <- "N1111"
 chain.best <- readRDS(paste0(path, best_model, "/chain.", best_model, ".rds"))
 chain.best <- set.burnin(chain.best, 0.3)
 #sum_best <- summary(chain.best)
