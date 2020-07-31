@@ -34,7 +34,7 @@ geogfn <- "data/indomalay_geog.data"
 moref(trfn)
 moref(geogfn)
 
-tipranges <- getranges_from_LagrangePHYLIP(lgdata_fn = geog_ind)
+tipranges <- getranges_from_LagrangePHYLIP(lgdata_fn = geogfn)
 max(rowSums(dfnums_to_numeric(tipranges@df))) # Maximum range size observed
 max_range_size <- 4 # max numb. areas
 
@@ -79,8 +79,8 @@ check_BioGeoBEARS_run(BioGeoBEARS_run_object) # check for errors
 
 # For a slow analysis, run once, then set runslow=FALSE to just 
 # load the saved result.
-runslow <- TRUE
-resfn <- "imdomalay_DEC_M0_unconstrained_v1.Rdata"
+runslow <- F
+resfn <- "biogeob/imdomalay_DEC_M0_unconstrained_v1.Rdata"
 if (runslow)
 {
   res <- bears_optim_run(BioGeoBEARS_run_object)
@@ -132,8 +132,8 @@ BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["j","est"]  <- jsta
 
 check_BioGeoBEARS_run(BioGeoBEARS_run_object)
 
-resfn <- "imdomalay_DEC+J_M0_unconstrained_v1.Rdata"
-runslow <- TRUE
+resfn <- "biogeob/imdomalay_DEC+J_M0_unconstrained_v1.Rdata"
+runslow <- F
 if (runslow)
 {
   #sourceall("/Dropbox/_njm/__packages/BioGeoBEARS_setup/")
@@ -150,6 +150,8 @@ if (runslow)
 }
 
 # DEC and DEC+J plots ####
+tr <- read.tree("data/zanne_tree_pr.tre")
+
 pdffn <- "indomalay_DEC_vs_DEC+J_M0_unconstrained_v1.pdf"
 pdf(pdffn, width = 6, height = 6)
 
@@ -158,29 +160,32 @@ results_object <- resDEC
 scriptdir <- np(system.file("extdata/a_scripts", package = "BioGeoBEARS"))
 res2 <- plot_BioGeoBEARS_results(results_object, analysis_titletxt, 
                                  addl_params = list("j"), plotwhat = "text", 
-                                 label.offset = 0.45, tipcex = 0.7, statecex = 0.7, splitcex = 0.6, titlecex = 0.8, 
+                                 label.offset = 0.45, tipcex = 0.2, statecex = 0.4, 
+                                 splitcex = 0.4, titlecex = 0.8, 
                                  plotsplits = TRUE, cornercoords_loc = scriptdir, 
                                  include_null_range = TRUE, tr = tr, tipranges = tipranges)
 
 plot_BioGeoBEARS_results(results_object, analysis_titletxt, 
                          addl_params = list("j"), plotwhat = "pie", 
-                         label.offset = 0.45, tipcex = 0.7, statecex = 0.7, splitcex = 0.6, titlecex = 0.8, 
-                         plotsplits = TRUE, cornercoords_loc = scriptdir, 
-                         include_null_range = TRUE, tr = tr, tipranges = tipranges)
-
+                         label.offset = 0.45, tipcex = 0.2, statecex = 0.4, 
+                         splitcex = 0.4, titlecex = 0.8, 
+                         plotsplits = F, plotlegend = T, cornercoords_loc = scriptdir, 
+                         include_null_range = TRUE)
 
 analysis_titletxt <- "indomalay DEC+J M0_unconstrained"
 results_object <- resDECj
 res1 <- plot_BioGeoBEARS_results(results_object, analysis_titletxt, 
                                  addl_params = list("j"), plotwhat = "text", 
-                                 label.offset = 0.45, tipcex = 0.7, statecex = 0.7, splitcex = 0.6, titlecex = 0.8, 
-                                 plotsplits = TRUE, cornercoords_loc = scriptdir, 
+                                 label.offset = 0.45, tipcex = 0.4, 
+                                 statecex = 0.4, splitcex = 0.6, titlecex = 0.8, 
+                                 plotsplits = F, cornercoords_loc = scriptdir, 
                                  include_null_range = TRUE, tr = tr, tipranges = tipranges)
 
 plot_BioGeoBEARS_results(results_object, analysis_titletxt, 
                          addl_params = list("j"), plotwhat = "pie", 
-                         label.offset = 0.45, tipcex = 0.7, statecex = 0.7, splitcex = 0.6, titlecex = 0.8, 
-                         plotsplits = TRUE, cornercoords_loc = scriptdir, 
+                         label.offset = 0.45, show.tip.label = F, 
+                         statecex = 0.4, splitcex = 0.6, titlecex = 0.7, 
+                         plotsplits = F, cornercoords_loc = scriptdir, 
                          include_null_range = TRUE, tr = tr, tipranges = tipranges)
 dev.off()
 system(paste("open ", pdffn, sep = ""))
@@ -227,8 +232,8 @@ BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["mx01v","est"]  <- 
 
 check_BioGeoBEARS_run(BioGeoBEARS_run_object)
 
-runslow <- TRUE
-resfn <- "indomalay_DIVALIKE_M0_unconstrained_v1.Rdata"
+runslow <- F
+resfn <- "biogeob/indomalay_DIVALIKE_M0_unconstrained_v1.Rdata"
 if (runslow)
 {
   res <- bears_optim_run(BioGeoBEARS_run_object)
@@ -297,8 +302,8 @@ BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["j","min"] <- 0.000
 BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["j","max"] <- 1.99999
 
 check_BioGeoBEARS_run(BioGeoBEARS_run_object)
-resfn <- "indomalay_DIVALIKE+J_M0_unconstrained_v1.Rdata"
-runslow <- TRUE
+resfn <- "biogeob/indomalay_DIVALIKE+J_M0_unconstrained_v1.Rdata"
+runslow <- F
 if (runslow)
 {
   #sourceall("/Dropbox/_njm/__packages/BioGeoBEARS_setup/")
@@ -398,8 +403,8 @@ BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["mx01y","init"] <- 
 BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["mx01y","est"]  <- 0.9999
 
 check_BioGeoBEARS_run(BioGeoBEARS_run_object)
-runslow <- TRUE
-resfn <- "indomalay_BAYAREALIKE_M0_unconstrained_v1.Rdata"
+runslow <- F
+resfn <- "biogeob/indomalay_BAYAREALIKE_M0_unconstrained_v1.Rdata"
 if (runslow)
 {
   res <- bears_optim_run(BioGeoBEARS_run_object)
@@ -483,8 +488,8 @@ BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["mx01y","est"]  <- 
 
 check_BioGeoBEARS_run(BioGeoBEARS_run_object)
 
-resfn <- "indomalay_BAYAREALIKE+J_M0_unconstrained_v1.Rdata"
-runslow <- TRUE
+resfn <- "biogeob/indomalay_BAYAREALIKE+J_M0_unconstrained_v1.Rdata"
+runslow <- F
 if (runslow)
 {
   res <- bears_optim_run(BioGeoBEARS_run_object)
@@ -500,7 +505,6 @@ if (runslow)
 }
 
 # sum stats ####
-
 restable <- NULL
 teststable <- NULL
 
@@ -573,8 +577,8 @@ teststable$null <- c("DEC", "DIVALIKE", "BAYAREALIKE")
 row.names(restable) <- c("DEC", "DEC+J", "DIVALIKE", "DIVALIKE+J", "BAYAREALIKE", "BAYAREALIKE+J")
 restable <- put_jcol_after_ecol(restable)
 
-write.table(restable, "results_table.csv", sep = "\t", row.names = F)
-#write.table(teststable, "test_table.csv", sep = "\t", row.names = F)
+write.table(restable, "biogeob/results_table.csv", sep = "\t")
+#write.table(teststable, "test_table.csv", sep = "\t")
 
 
 ## model weigths ##
@@ -585,8 +589,8 @@ AICtable <- calc_AIC_column(LnL_vals=restable$LnL, nparam_vals=restable$numparam
 restable <- cbind(restable, AICtable)
 restable_AIC_rellike <- AkaikeWeights_on_summary_table(restable=restable, colname_to_use="AIC")
 restable_AIC_rellike <- put_jcol_after_ecol(restable_AIC_rellike)
-restable_AIC_rellike %>% round(3) 
-write.table(restable_AIC_rellike, "results_table_relLik.csv", sep = "\t", row.names = F)
+restable_AIC_rellike %>% round(4) %>% mutate(model = rownames(restable_AIC_rellike)) %>% 
+  arrange(desc(AIC_wt)) %>% write.table("biogeob/results_table_relLik.csv", sep = "\t")
 
 # AICcs
 samplesize <- length(tr$tip.label)
@@ -594,5 +598,5 @@ AICtable <- calc_AICc_column(LnL_vals=restable$LnL, nparam_vals=restable$numpara
 restable2 <- cbind(restable2, AICtable)
 restable_AICc_rellike <- AkaikeWeights_on_summary_table(restable=restable2, colname_to_use="AICc")
 restable_AICc_rellike <- put_jcol_after_ecol(restable_AICc_rellike)
-restable_AICc_rellike %>% round(3)
-write.table(restable_AICc_rellike, "results_table_rel_Lik_cor.csv", sep = "\t", row.names = F)
+restable_AICc_rellike %>% round(4) %>% mutate(model = rownames(restable_AICc_rellike)) %>% 
+  arrange(desc(AICc_wt)) %>% write.table("biogeob/results_table_rel_Lik_cor.csv", sep = "\t")
