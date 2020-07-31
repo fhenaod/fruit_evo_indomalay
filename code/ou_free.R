@@ -5,7 +5,7 @@ library(bayou)
 spptree1<-read.tree("data/zanne_tree.tre")
 spptraits1<-read.csv("data/spptraits1.csv")
 
-tree_data<-make.treedata(spptree1, spptraits1)
+tree_data <- make.treedata(spptree1, spptraits1)
 tree_data_ln<-mutate(tree_data, ln_fruit_lg = log(fruit_lg), ln_seed_lg = log(seed_lg), ln_num_seeds = log(num_seeds))
 sd2<-sqrt(log(1+ (var(pull(tree_data_ln$dat,fruit_lg), na.rm = T)) / (mean(pull(tree_data_ln$dat,fruit_lg), na.rm = T))^2 ))
 
@@ -45,7 +45,7 @@ sum_cf <- readRDS("model_free/chain_sum.rds")
 
 shiftsum <- shiftSummaries(chain_free, mcmc, pp.cutoff = .3)
 saveRDS(shiftsum, file = "model_free/shiftsum_free.rds")
-shiftsum <- readRDS("model_free/shiftsum_free.rds")
+shiftsum <- readRDS("chain2/model_free/shiftsum_free.rds")
 pdf(paste0("shiftsummaryplot.pdf"))
 plotShiftSummaries((shiftsum))
 dev.off()
