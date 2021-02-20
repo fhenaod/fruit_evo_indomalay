@@ -29,6 +29,7 @@ write.table(geo_data, file = "data/indomalay_geog.data", sep = "\t", row.names =
 
 # file path
 trfn <- "data/zanne_tree_pr.tre"
+tr <- read.tree("data/zanne_tree_pr.tre")
 geogfn <- "data/indomalay_geog.data"
 
 moref(trfn)
@@ -504,7 +505,7 @@ if (runslow)
   resBAYAREALIKEj <- res
 }
 
-# sum stats ####
+# Ancestral Range estimation sum stats ####
 restable <- NULL
 teststable <- NULL
 
@@ -600,3 +601,182 @@ restable_AICc_rellike <- AkaikeWeights_on_summary_table(restable=restable2, coln
 restable_AICc_rellike <- put_jcol_after_ecol(restable_AICc_rellike)
 restable_AICc_rellike %>% round(4) %>% mutate(model = rownames(restable_AICc_rellike)) %>% 
   arrange(desc(AICc_wt)) %>% write.table("biogeob/results_table_rel_Lik_cor.csv", sep = "\t")
+
+
+# non-stratified BSM ####
+model_name = "resDECj"
+res = resDECj
+
+results_object = res
+scriptdir = np(system.file("extdata/a_scripts", package = "BioGeoBEARS"))
+
+res2 = plot_BioGeoBEARS_results(results_object, analysis_titletxt, 
+                                addl_params = list("j"), plotwhat = "text", 
+                                label.offset = 0.45, tipcex = 0.7, statecex = 0.3, 
+                                splitcex = 0.4, titlecex = 0.5, plotsplits = TRUE, 
+                                cornercoords_loc = scriptdir, include_null_range = TRUE, 
+                                tr = tr, tipranges = tipranges)
+
+clado_events_tables = NULL
+ana_events_tables = NULL
+lnum = 0
+
+# input data
+BSM_inputs_fn = "BSM_inputs_file.Rdata"
+runInputsSlow = T
+
+if (runInputsSlow)
+{
+  stochastic_mapping_inputs_list = get_inputs_for_stochastic_mapping(res = res)
+  save(stochastic_mapping_inputs_list, file = BSM_inputs_fn)
+} else {
+  # Loads to "stochastic_mapping_inputs_list"
+  load(BSM_inputs_fn)
+} # END if (runInputsSlow)
+
+# Check inputs 
+names(stochastic_mapping_inputs_list)
+stochastic_mapping_inputs_list$phy2
+stochastic_mapping_inputs_list$COO_weights_columnar
+stochastic_mapping_inputs_list$unconstr
+set.seed(seed = as.numeric(Sys.time()))
+
+# run analysis
+runBSMslow = F
+if (runBSMslow == TRUE)
+{
+  BSM_output = runBSM(res, 
+                      stochastic_mapping_inputs_list = stochastic_mapping_inputs_list, 
+                      maxnum_maps_to_try = 100, nummaps_goal = 10, 
+                      maxtries_per_branch = 100, save_after_every_try = TRUE, 
+                      savedir = getwd(), seedval = 12345, 
+                      wait_before_save = 0.01)
+  
+  RES_clado_events_tables = BSM_output$RES_clado_events_tables
+  RES_ana_events_tables = BSM_output$RES_ana_events_tables
+} else {
+  load(file = "biogeob/bsm/RES_clado_events_tables.Rdata")
+  load(file = "biogeob/bsm/RES_ana_events_tables.Rdata")
+  BSM_output = NULL
+  BSM_output$RES_clado_events_tables = RES_clado_events_tables
+  BSM_output$RES_ana_events_tables = RES_ana_events_tables
+} # END if (runBSMslow == TRUE)
+
+# BSM output
+clado_events_tables <- BSM_output$RES_clado_events_tables
+ana_events_tables <- BSM_output$RES_ana_events_tables
+
+head(clado_events_tables[[1]])
+head(ana_events_tables[[1]])
+length(clado_events_tables)
+length(ana_events_tables)
+
+include_null_range = TRUE
+areanames = names(tipranges@df)
+areas = areanames
+
+states_list_0based <- rcpp_areas_list_to_states_list(areas = areas, 
+                                                    maxareas = max_range_size, 
+                                                    include_null_range = include_null_range)
+
+colors_list_for_states <- get_colors_for_states_list_0based(areanames = areanames, 
+                                                           states_list_0based = states_list_0based, 
+                                                           max_range_size = max_range_size, plot_null_range = TRUE)
+# plot a SM
+scriptdir <- np(system.file("extdata/a_scripts", package = "BioGeoBEARS"))
+stratified <- FALSE
+clado_events_table <- clado_events_tables[[1]]
+ana_events_table <- ana_events_tables[[1]]
+
+cols_to_get <- names(clado_events_table[,-ncol(clado_events_table)])
+colnums <- match(cols_to_get, names(ana_events_table))
+ana_events_table_cols_to_add <- ana_events_table[,colnums]
+anagenetic_events_txt_below_node <- rep("none", nrow(ana_events_table_cols_to_add))
+ana_events_table_cols_to_add <- cbind(ana_events_table_cols_to_add, anagenetic_events_txt_below_node)
+rows_to_get_TF <- ana_events_table_cols_to_add$node <= length(tr$tip.label)
+master_table_cladogenetic_events <- rbind(ana_events_table_cols_to_add[rows_to_get_TF,], clado_events_table)
+
+# if in PDF
+#pdffn = paste0(model_name, "_single_stochastic_map_n1.pdf")
+#pdf(file = pdffn, width = 6, height = 6)
+
+# BSM to res objt
+master_table_cladogenetic_events <- clado_events_tables[[1]]
+resmod <- stochastic_map_states_into_res(res = res, 
+                                        master_table_cladogenetic_events = master_table_cladogenetic_events, 
+                                        stratified = stratified)
+
+plot_BioGeoBEARS_results(results_object = resmod, 
+                         analysis_titletxt = "BSM", 
+                         addl_params = list("j"), #label.offset = 0.5, 
+                         plotwhat = "pie", cornercoords_loc = scriptdir, 
+                         root.edge = TRUE, colors_list_for_states = colors_list_for_states, 
+                         skiptree = FALSE, show.tip.label = F)
+
+# Paint on the branch states
+paint_stochastic_map_branches(res = resmod, 
+                              master_table_cladogenetic_events = master_table_cladogenetic_events, 
+                              colors_list_for_states = colors_list_for_states, 
+                              lwd = 5, lty = par("lty"), root.edge = TRUE, 
+                              stratified = stratified)
+
+plot_BioGeoBEARS_results(results_object = resmod, 
+                         analysis_titletxt = "Stochastic map", 
+                         addl_params = list("j"), plotwhat = "text", 
+                         cornercoords_loc = scriptdir, root.edge = TRUE, 
+                         colors_list_for_states = colors_list_for_states, 
+                         skiptree = TRUE, show.tip.label = F)
+ 
+# close pdf
+#dev.off()
+#cmdstr = paste("open ", pdffn, sep = "")
+#system(cmdstr)
+
+# summarize SM tables
+length(clado_events_tables)
+length(ana_events_tables)
+
+head(clado_events_tables[[1]][,-20])
+tail(clado_events_tables[[1]][,-20])
+
+head(ana_events_tables[[1]])
+tail(ana_events_tables[[1]])
+
+areanames <- names(tipranges@df)
+actual_names <- areanames
+
+# Get the dmat and times (if any)
+dmat_times <- get_dmat_times_from_res(res = res, numstates = NULL)
+dmat_times <- get_dmat_times_from_res(res = res, 
+                                     numstates = numstates_from_numareas(numareas = 4, maxareas = 4, include_null_range = TRUE))
+dmat_times
+
+# Extract BSM output
+clado_events_tables <- BSM_output$RES_clado_events_tables
+ana_events_tables <- BSM_output$RES_ana_events_tables
+
+# sim the source areas
+BSMs_w_sourceAreas <- simulate_source_areas_ana_clado(res, 
+                                                     clado_events_tables, 
+                                                     ana_events_tables, 
+                                                     areanames)
+
+clado_events_tables <- BSMs_w_sourceAreas$clado_events_tables
+ana_events_tables <- BSMs_w_sourceAreas$ana_events_tables
+
+# Count all anagenetic and cladogenetic events
+counts_list <- count_ana_clado_events(clado_events_tables, 
+                                     ana_events_tables, areanames, actual_names)
+
+summary_counts_BSMs <- counts_list$summary_counts_BSMs
+print(conditional_format_table(summary_counts_BSMs))
+
+# Hist event counts
+hist_event_counts(counts_list, 
+                  pdffn = paste0(model_name, "_histograms_of_event_counts.pdf"))
+
+# to check if ML ancestral state/range probs and mean BSMs add up
+library(MultinomialCI) # 95% CIs on BSM counts
+check_ML_vs_BSM(res, clado_events_tables, model_name, 
+                tr = NULL, plot_each_node = FALSE, linreg_plot = TRUE, 
+                MultinomialCI = TRUE)
