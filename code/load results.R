@@ -26,12 +26,12 @@ mod_comp %>% arrange((BF))
 best_model <- mod_comp[which(max(mod_comp$BF, na.rm = T)==mod_comp$BF),][1,1]
 #
 
-best_model <- "N1111"
+best_model <- "11111"
 chain.best <- readRDS(paste0(path, best_model, "/chain.", best_model, ".rds"))
 chain.best <- set.burnin(chain.best, 0.3)
 #sum_best <- summary(chain.best)
 sum_best <- readRDS(paste0(path, best_model, "/sum_", best_model, ".rds"))
-sum_best$statistics
+sum_best$statistics[3,] %>% round(3)
 head(sum_best$branch.posteriors)
 
 plot(chain.best, auto.layout = FALSE)
@@ -45,11 +45,13 @@ tab_sum <- data.frame(x = x_names,
            hpdL = sum_best$statistics[par_names,"HPD95Lower"],
            hpdU = sum_best$statistics[par_names,"HPD95Upper"])
 
-png("res_model.png", width = 900, height = 900, bg = "transparent", res = 250)
-ggplot(tab_sum, aes(x = x, y = beta)) + geom_point() +
-  geom_errorbar(aes(ymin = hpdL, ymax = hpdU), width = .2) + theme_classic() + theme(legend.position = "none") + 
+png(paste0("res_", best_model, ".png"), width = 900, height = 900, bg = "transparent", res = 250)
+ggplot(tab_sum, aes(x = factor(x, level = c('sunda', 'sulawesi', 'maluku', 'newguinea')), y = beta)) + 
+  geom_point() + geom_errorbar(aes(ymin = hpdL, ymax = hpdU), width = .2) + 
+  theme_classic() + theme(legend.position = "none") + 
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") + 
-  labs(subtitle = paste("Model:",best_model), x = "", y = "Island Effect (β)")
+  labs(x = "", y = "Island effect (β)") + 
+  scale_x_discrete(labels = c('Sunda', 'Sulawesi', 'Maluku', 'New guinea'))
 dev.off()
 
 plotBranchHeatMap(d_fruit_lg_ln$phy, chain.best, "alpha", pal = cm.colors, cex = .1)
