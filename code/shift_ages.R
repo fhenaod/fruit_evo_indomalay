@@ -14,7 +14,6 @@ nodelabels(col = "blue", frame = "none", cex= .7, adj = c(-.5, .5))
 tr <- read.tree("data/zanne_tree_pr.tre")
 branching.times(tr) %>% max()
 
-
 # function to extract shift ages from branch numbers
 get_shift_ages=function(tree, sh_br){
   n_hei <- nodeHeights(tree)
@@ -38,46 +37,58 @@ get_shift_ages(shiftsum$tree, shiftsum$pars$sb) %>% round(2) %>%
 ana_events_tables[[1]]$event_txt %>% head()
 ana_events_tables[[1]]$event_txt %>% unique() %>% sort()
 
-# table dimensions
+# tables dimensions
 tt <- list()
 for(i in 1:length(ana_events_tables)){
-  
-  tt[[i]] <- ana_events_tables[[i]] %>% group_by(event_txt) %>% 
+
+    tt[[i]] <- ana_events_tables[[i]] %>% group_by(event_txt) %>% 
     summarize(mean(abs_event_time)) %>% dim()
 }
-tabs_list <- ana_events_tables[sapply(tt, "[", 1) == 28]
+max_n_evts <- which(sapply(tt, "[", 1)==max(sapply(tt, "[", 1)))
 
 # extract average event times per dispersal type
-e_ts <- tabs_list[[1]] %>% group_by(event_txt) %>% 
-  summarize(mean(abs_event_time)) %>% select(event_txt) %>% data.frame()
-
-for(i in 1:length(tabs_list)){
-  
-  c_temp <- tabs_list[[i]] %>% group_by(event_txt) %>% 
-    summarize(mean(abs_event_time)) %>% select(`mean(abs_event_time)`) %>% 
-    rename(n = `mean(abs_event_time)`)
-  
-  e_ts <- cbind(e_ts, c_temp)
+for(i in 1:length(ana_events_tables)){
+  if(i == 1){
+    c_temp <- left_join(
+        ana_events_tables[[max_n_evts]] %>% group_by(event_txt) %>% 
+          summarize(mean(abs_event_time)) %>% select(event_txt) %>% data.frame(),
+        ana_events_tables[[i]] %>% group_by(event_txt) %>% 
+          summarize(mean(abs_event_time)) %>% rename(n = `mean(abs_event_time)`), 
+        by = "event_txt")
+  } else {
+    c_temp <- left_join(
+      c_temp,
+      ana_events_tables[[i]] %>% group_by(event_txt) %>% 
+        summarize(mean(abs_event_time)) %>% rename(n = `mean(abs_event_time)`), 
+      by = "event_txt")
+  } 
 }
-names(e_ts) <- c("event_txt", paste0(rep("sm", 99), 1:99))
-e_ts <- e_ts %>% mutate(mean  = round(rowMeans(across(where(is.numeric))),2) ) 
-e_ts %>% write.csv("biogeob/bsm/disp_event_t.csv")
+names(c_temp) <- c("event_txt", paste0(rep("sm", length(ana_events_tables)), 1:length(ana_events_tables)))
+e_ts <- c_temp
+e_ts <- e_ts %>% mutate(mean_time_events  = round(rowMeans(na.rm = T, across(where(is.numeric))),2))
+e_ts %>% write.csv("disp_event_times.csv")
 
 # extract mean number of events per dispersal type
-f_ts <- tabs_list[[1]] %>% group_by(event_txt) %>% count() %>% 
-  select(event_txt) %>% data.frame()
-
-for(i in 1:length(tabs_list)){
-  
-  c_temp <- tabs_list[[i]] %>% group_by(event_txt) %>% count() %>% pull(n)
-  
-  f_ts <- cbind(f_ts, c_temp)
+for(i in 1:length(ana_events_tables)){
+  if(i == 1){
+    n_temp <- 
+      left_join(
+        ana_events_tables[[max_n_evts]] %>% group_by(event_txt) %>% 
+          count() %>% select(event_txt) %>% data.frame(),
+        ana_events_tables[[i]] %>% group_by(event_txt) %>% count(), 
+        by = "event_txt"
+      )
+  } else {
+    n_temp <- left_join(
+      n_temp,
+      ana_events_tables[[i]] %>% group_by(event_txt) %>% count(), 
+      by = "event_txt"
+    )
+  } 
 }
-names(f_ts) <- c("event_txt", paste0(rep("sm", 99), 1:99))
-rowMeans(f_ts)
-f_ts <- f_ts %>% mutate(mean  = round(rowMeans(across(where(is.numeric))),2) ) %>% 
-  select(event_txt, mean) %>% arrange(desc(mean))
-f_ts %>% write.csv("biogeob/bsm/disp_event_ft.csv")
-
-tabs_list[[1]] %>% filter(event_txt == "L->LN")
+names(n_temp) <- c("event_txt", paste0(rep("sm", length(ana_events_tables)), 1:length(ana_events_tables)))
+f_ts <- n_temp
+f_ts <- f_ts %>% mutate(mean_n_events  = round(rowMeans(na.rm = T, across(where(is.numeric))),2) ) %>% 
+  select(event_txt, mean_n_events) 
+f_ts %>% write.csv("disp_event_count.csv")
 
