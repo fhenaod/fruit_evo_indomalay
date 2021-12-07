@@ -29,8 +29,9 @@ sh_br <- c(3, 9)
 get_shift_ages(str, sh_br)
 
 # Bayou ####
+shiftsum <- readRDS("run2/ou_free_fix/model_free/shift_sum_fixed.pp75.rds")
 get_shift_ages(shiftsum$tree, shiftsum$pars$sb) %>% round(2) %>% 
-  write.csv("ou_free_fix/model_free/trait_shift_ages.csv")
+  write.csv("run2/ou_free_fix/model_free/trait_shift_ages.csv")
 
 # BioGeoBEARS ####
 # anagenetic event time tables
@@ -65,8 +66,12 @@ for(i in 1:length(ana_events_tables)){
 }
 names(c_temp) <- c("event_txt", paste0(rep("sm", length(ana_events_tables)), 1:length(ana_events_tables)))
 e_ts <- c_temp
-e_ts <- e_ts %>% mutate(mean_time_events  = round(rowMeans(na.rm = T, across(where(is.numeric))),2))
-e_ts %>% write.csv("disp_event_times.csv")
+e_ts <- e_ts %>% 
+  mutate(mean_time_events = round(rowMeans(na.rm = T, across(where(is.numeric))),2)) %>% 
+  group_by(event_txt) %>% mutate(sd_time_events = round(sd(na.rm = T, across(where(is.numeric))),2) )
+
+e_ts %>% select(event_txt,mean_time_events, sd_time_events) %>% 
+  write.csv("disp_event_times.csv")
 
 # extract mean number of events per dispersal type
 for(i in 1:length(ana_events_tables)){
@@ -88,7 +93,10 @@ for(i in 1:length(ana_events_tables)){
 }
 names(n_temp) <- c("event_txt", paste0(rep("sm", length(ana_events_tables)), 1:length(ana_events_tables)))
 f_ts <- n_temp
-f_ts <- f_ts %>% mutate(mean_n_events  = round(rowMeans(na.rm = T, across(where(is.numeric))),2) ) %>% 
-  select(event_txt, mean_n_events) 
-f_ts %>% write.csv("disp_event_count.csv")
+f_ts <- f_ts %>% mutate(mean_n_events  = round(rowMeans(na.rm = T, across(where(is.numeric))),2) )
+f_ts %>% select(event_txt, mean_n_events) %>% 
+  write.csv("run2/biogeob/bsm_bayes/disp_event_count.csv")
 
+left_join(e_ts %>% select(event_txt,mean_time_events, sd_time_events), 
+          f_ts %>% select(event_txt, mean_n_events), by = "event_txt") %>% 
+  write.csv("run2/biogeob/bsm_bayes/disp_event_final_tab.csv", row.names = F)
