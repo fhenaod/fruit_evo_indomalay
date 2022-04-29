@@ -389,9 +389,9 @@ BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["v","init"] <- 0.0
 BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["v","est"]  <- 0.0
 
 # no jump dispersal/founder-event speciation
-BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["j","type"] <- "free"
-BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["j","init"] <- 0.01
-BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["j","est"]  <- 0.01
+#BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["j","type"] <- "free"
+#BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["j","init"] <- 0.01
+#BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["j","est"]  <- 0.01
 
 # linkage between parameters
 BioGeoBEARS_run_object$BioGeoBEARS_model_object@params_table["ysv","type"] <- "1-j"
@@ -504,6 +504,43 @@ if (runslow)
   load(resfn)
   resBAYAREALIKEj <- res
 }
+
+# BAYEAREA-like and BAYEAREA-like+J plots #####
+pdffn <- "indomalay_BAYAREALIKE_vs_BAYAREALIKEE+J_M0_unconstrained_v1.pdf"
+pdf(pdffn, width = 6, height = 6)
+
+analysis_titletxt <- "BAYAREALIKE indomalay M0_unconstrained"
+results_object <- resBAYAREALIKE
+scriptdir <- np(system.file("extdata/a_scripts", package = "BioGeoBEARS"))
+
+res2 <- plot_BioGeoBEARS_results(results_object, analysis_titletxt, 
+                                 addl_params = list("j"), plotwhat = "text", 
+                                 label.offset = 0.45, tipcex = 0.7, statecex = 0.7, splitcex = 0.6, titlecex = 0.8, 
+                                 plotsplits = TRUE, cornercoords_loc = scriptdir, 
+                                 include_null_range = TRUE, tr = tr, tipranges = tipranges)
+
+plot_BioGeoBEARS_results(results_object, analysis_titletxt, 
+                         addl_params = list("j"), plotwhat = "pie", 
+                         label.offset = 0.45, tipcex = 0.7, statecex = 0.7, splitcex = 0.6, titlecex = 0.8, 
+                         plotsplits = TRUE, cornercoords_loc = scriptdir, 
+                         include_null_range = TRUE, tr = tr, tipranges = tipranges)
+
+analysis_titletxt <- "BAYAREALIKE+J indomalay M0_unconstrained"
+results_object <- resBAYAREALIKEj
+
+res1 <- plot_BioGeoBEARS_results(results_object, analysis_titletxt, 
+                                 addl_params = list("j"), plotwhat = "text", 
+                                 label.offset = 0.45, tipcex = 0.7, statecex = 0.7, splitcex = 0.6, titlecex = 0.8, 
+                                 plotsplits = TRUE, cornercoords_loc = scriptdir, 
+                                 include_null_range = TRUE, tr = tr, tipranges = tipranges)
+
+plot_BioGeoBEARS_results(results_object, analysis_titletxt, 
+                         addl_params = list("j"), plotwhat = "pie", 
+                         label.offset = 0.45, tipcex = 0.7, statecex = 0.7, splitcex = 0.6, titlecex = 0.8, 
+                         plotsplits = TRUE, cornercoords_loc = scriptdir, 
+                         include_null_range = TRUE, tr = tr, tipranges = tipranges)
+dev.off()
+system(paste("open ", pdffn, sep = ""))
 
 # Ancestral Range estimation sum stats ####
 restable <- NULL
