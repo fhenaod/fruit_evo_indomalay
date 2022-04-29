@@ -6,7 +6,7 @@ spptraits1 <- read.csv("data/data210630.csv")
 df2tree <- spptraits1 %>% 
   mutate(g_dat = sunda + sulawesi + maluku + newguinea) %>% 
   filter(g_dat > 0) %>% 
-  select(species = species, genus = genus, family = family)
+  select(species = Gen_spp, genus = genus, family = family)
 
 tree_n1_s3 <- phylo.maker(sp.list = df2tree, tree = GBOTB.extended, 
                        nodes = nodes.info.1, scenarios = "S3")
@@ -39,6 +39,3 @@ sp_tre_raw <- castor:::extend_tree_to_height(sp_tre_raw)$tree
 table(sp_tre_raw$edge.length<=0)
 min(sp_tre_raw$edge.length)
 write.tree(sp_tre_raw, file = "data/spptreeSmithBrownShort.cr.tre")
-
-
-

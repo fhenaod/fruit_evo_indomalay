@@ -2,9 +2,18 @@ library(tidyverse)
 
 shiftsum <- readRDS("ou_free_fix/model_free/shift_sum_fixed.pp75.rds")
 
-med_tetha <- sapply(shiftsum$cladesummaries, unlist)[1,] %>% sapply("[") #106
-sb_shifts <- c(0, shiftsum$pars$sb) # 24
-shiftsum$descendents # 24
+# species per shift ####
+n_spp_sh <- sapply(shiftsum$descendents, length) 
+data.frame(
+species = shiftsum$descendents %>% unlist(),
+shift = rep(1:length(n_spp_sh), n_spp_sh)
+) %>% #tail()
+write.csv(file = "run2/ou_free_fix/spp_per_shift_indom.csv")
+
+# median theta ####
+med_tetha <- sapply(shiftsum$cladesummaries, unlist)[1,] %>% sapply("[")
+sb_shifts <- c(0, shiftsum$pars$sb)
+shiftsum$descendents
 
 cons_tab <- data.frame()
 for(i in 1:length(med_tetha)){
@@ -27,10 +36,10 @@ n_shifts[is.na(n_shifts)] <- 0
 data.frame(spp = shiftsum$tree$tip.label, n_shifts)
 
 res_cons_tab <- left_join(cons_tab, data.frame(spp = shiftsum$tree$tip.label, n_shifts))
-write.csv(res_cons_tab, file = "sum_shifts_indom_.csv")
+write.csv(res_cons_tab, file = "run2/ou_free_fix/sum_shifts_indom_.csv")
 res_cons_tab %>% tail()
 
-###
+### plot 
 par(mfrow = c(1,2))
 plot((shiftsum$tree), main = "no- lad", show.tip.label = F, no.margin = T)
 plot(ladderize(shiftsum$tree), main = "lad", show.tip.label = F, no.margin = T)
@@ -41,7 +50,7 @@ tiplabels(col = "blue", frame = "none", offset = .1)
 edgelabels(col = "red", frame = "none", cex = .7)
 get_path(1:Ntip(tt), tt$edge, Ntip(tt)+1)
 
-# shift ages
+# shift ages ####
 n_hei <- nodeHeights(shiftsum$tree)
 shift_ages <- c()
 for(i in 1:length(shiftsum$pars$sb)){
@@ -50,6 +59,4 @@ for(i in 1:length(shiftsum$pars$sb)){
 }
 shift_ages %>% summary()
 shft_ages_filt <- shift_ages[(sapply(shiftsum$descendents,length)>=4)[2:length(shiftsum$descendents)]]
-
-
 
