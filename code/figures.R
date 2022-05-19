@@ -182,12 +182,12 @@ read.csv("run2/custom_models/fixed_island_fix/tab_sum_island_fixed.csv",
   theme_classic(base_size = 15) + 
   theme(legend.position = "none",
         axis.text.x = 
-          element_text(angle = 45, vjust = 0.9, hjust = .9, colour = "black"),
+          element_text(angle = 0, vjust = 0.9, hjust = .5, colour = "black"),
         axis.text.y = element_text(colour = "black")) + 
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") + 
   labs(x = "", y = "β coefficient") + # Island effect (β)
   scale_x_discrete(labels = c('Sunda', 'Sulawesi', 'Maluku', 'New  \nguinea'))
-ggsave("fig5_a.png", width = 12, height = 12, units = "cm")
+ggsave("fig5_a.png", width = 15, height = 12, units = "cm")
 
 # habit
 f5b <- 
@@ -198,12 +198,12 @@ read.csv("run2/custom_models/fixed_habit_fix/tab_sum_habit_fixed.csv",
   theme_classic(base_size = 15) + 
   theme(legend.position = "none",
         axis.text.x = 
-          element_text(angle = 45, vjust = 0.9, hjust = 1, colour = "black"),
+          element_text(angle = 0, vjust = 0.9, hjust = 0.5, colour = "black"),
         axis.text.y = element_text(colour = "black")) + 
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") + 
   labs(x = "", y = "") + # Habit effect (β)
   scale_x_discrete(labels = c('Climber\nwoody', 'Climber\nherbaceous',  'Woody', 'Herbaceous'))
-ggsave("fig5_b.png", width = 12, height = 12, units = "cm")
+ggsave("fig5_b.png", width = 15, height = 12, units = "cm")
 
 # type
 f5c <- 
@@ -214,12 +214,12 @@ read.csv("run2/custom_models/fixed_type_fix/tab_sum_type_fixed.csv",
   theme_classic(base_size = 15) + 
   theme(legend.position = "none",
         axis.text.x = 
-          element_text(angle = 45, vjust = 0.9, hjust = 1, colour = "black"),
+          element_text(angle = 0, vjust = 0.9, hjust = .5, colour = "black"),
         axis.text.y = element_text(colour = "black")) + 
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") + 
   labs(x = "", y = "") + #Fruit type effect (β)
-  scale_x_discrete(labels = c('Fleshy', 'Dry'))
-ggsave("fig5_c.png", width = 12, height = 12, units = "cm")
+  scale_x_discrete(labels = c('Fleshy\n', 'Dry'))
+ggsave("fig5_c.png", width = 15, height = 12, units = "cm")
 
-ggpubr::ggarrange(f5a, f5c, f5c, nrow = 1, labels = c("A", "B", "C"))
-ggsave("fig5_panel.png", width = 25, height = 12, units = "cm")
+ggpubr::ggarrange(f5a, f5b, f5c, nrow = 1, labels = c("A", "B", "C"))
+ggsave("fig5_panel.png", width = 38, height = 12, units = "cm")
