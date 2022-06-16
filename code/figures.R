@@ -3,7 +3,8 @@ library(bayou)
 library(BioGeoBEARS)
 library(castor)
 
-chain_fixed <- readRDS("run2/ou_free_fix/model_free/mcmc_fixed.pp75.rds")
+path <- ("run2/ou_free_fix/model_free/")
+chain_fixed <- readRDS(paste0(path, "mcmc_fixed.pp75.rds"))
 
 # Fig 2 ####
 data_spp <- read.csv(file = "data/species_clades.csv", head = T)
@@ -14,7 +15,7 @@ left_join(
 data_spp %>% 
   mutate(genus = sapply(strsplit(data_spp$species, "_", fixed = T), "[", 1)),
 seed_tax, by = c("genus" = "genus")
-) %>% filter(clade == "Fabids") %>% filter(order == "Huerteales")
+) %>% filter(clade == "Fabids") %>% filter(order == "Huerteales") #%>% 
   pull(order) %>% unique()
   filter(order == "Malpighiales" | order == "Fabales") 
 
@@ -150,11 +151,12 @@ plotSimmap.mcmc(chain_fixed, edge.type = "regimes",
                 direction = "leftwards", circles = F)
 dev.off()
 
-# transistion times histo-densi graph ####
-island_times <- read.csv("run2/biogeob/bsm_bayes/disp_event_final_tab.csv", 
+# transition times histo-densi graph ####
+path <- ("run2/biogeob/bsm_bayes/")
+island_times <- read.csv(paste0(path, "disp_event_final_tab.csv"), 
                          header = T)
-
-fruit_times <- read.csv("run2/ou_free_fix/model_free/trait_shift_ages.csv", 
+path <- ("run2/ou_free_fix/model_free/")
+fruit_times <- read.csv(paste0(path, "trait_shift_ages.csv"), 
                         header = T)
 
 rbind(
@@ -221,5 +223,6 @@ read.csv("run2/custom_models/fixed_type_fix/tab_sum_type_fixed.csv",
   scale_x_discrete(labels = c('Fleshy\n', 'Dry'))
 ggsave("fig5_c.png", width = 15, height = 12, units = "cm")
 
-ggpubr::ggarrange(f5a, f5b, f5c, nrow = 1, labels = c("A", "B", "C"))
+ggpubr::ggarrange(f5a, f5b, f5c, nrow = 1, 
+                  labels = c("A", "B", "C"))
 ggsave("fig5_panel.png", width = 38, height = 12, units = "cm")
