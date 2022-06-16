@@ -29,9 +29,10 @@ sh_br <- c(3, 9)
 get_shift_ages(str, sh_br)
 
 # Bayou ####
-shiftsum <- readRDS("run2/ou_free_fix/model_free/shift_sum_fixed.pp75.rds")
+path <- c("run2/ou_free_fix/model_free/")
+shiftsum <- readRDS(path0(path, "shift_sum_fixed.pp75.rds"))
 get_shift_ages(shiftsum$tree, shiftsum$pars$sb) %>% round(2) %>% 
-  write.csv("run2/ou_free_fix/model_free/trait_shift_ages.csv")
+  write.csv(paste0(path,"trait_shift_ages.csv"))
 
 # BioGeoBEARS ####
 # anagenetic event time tables
@@ -94,9 +95,11 @@ for(i in 1:length(ana_events_tables)){
 names(n_temp) <- c("event_txt", paste0(rep("sm", length(ana_events_tables)), 1:length(ana_events_tables)))
 f_ts <- n_temp
 f_ts <- f_ts %>% mutate(mean_n_events  = round(rowMeans(na.rm = T, across(where(is.numeric))),2) )
+
+path_out <- c("run2/biogeob/bsm_bayes/")
 f_ts %>% select(event_txt, mean_n_events) %>% 
-  write.csv("run2/biogeob/bsm_bayes/disp_event_count.csv")
+  write.csv(paste0(path_out, "disp_event_count.csv"))
 
 left_join(e_ts %>% select(event_txt,mean_time_events, sd_time_events), 
           f_ts %>% select(event_txt, mean_n_events), by = "event_txt") %>% 
-  write.csv("run2/biogeob/bsm_bayes/disp_event_final_tab.csv", row.names = F)
+  write.csv(paste0(path_out, "disp_event_final_tab.csv"), row.names = F)
