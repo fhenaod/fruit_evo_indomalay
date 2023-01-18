@@ -1,9 +1,12 @@
-# Brodie et al. 2022 doi: https://doi.org/10.1086/723212
+# Brodie et al. 2022 
+https://doi.org/10.1086/723212
+
 This repo contains the data and code from the paper "Fruit size in Indo-Malayan island plants is more strongly influenced by filtering than by in situ evolution".
 Am Nat x, pp-pp  
 
-This repo contains two folders: 
 
+#
+This repo contains two folders: 
 ### data
 raw data for species traits and regions in .csv, and phylogeny in .tree formats
 
