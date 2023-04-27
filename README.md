@@ -1,8 +1,11 @@
-# Brodie et al. 2022 
+# Brodie et al. 2023 Am Nat
 https://doi.org/10.1086/723212
 
-This repo contains the data and code from the paper "Fruit size in Indo-Malayan island plants is more strongly influenced by filtering than by in situ evolution".
-Am Nat 201:4, 574-585  
+This repo contains the data and code from the paper: 
+
+Fruit Size in Indo-Malayan Island Plants Is More Strongly Influenced by Filtering than by In Situ Evolution
+Jedediah F. Brodie, L. Francisco Henao-Diaz, Bayu Pratama, Conner Copeland, Travis Wheeler, and Olga E. Helmy
+The American Naturalist 2023 201:4, 574-585 
 
 
 #
