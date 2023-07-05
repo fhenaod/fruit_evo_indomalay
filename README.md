@@ -5,7 +5,7 @@ This repo contains the data and code from the paper:
 
 Fruit Size in Indo-Malayan Island Plants Is More Strongly Influenced by Filtering than by In Situ Evolution
 Jedediah F. Brodie, L. Francisco Henao-Diaz, Bayu Pratama, Conner Copeland, Travis Wheeler, and Olga E. Helmy
-The American Naturalist 2023 201:4, 574-585 
+_The American Naturalist_ 2023 201:4, 574-585 
 
 
 #
