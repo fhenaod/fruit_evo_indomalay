@@ -17,4 +17,4 @@ raw data for species traits and regions in .csv, and phylogeny in .tree formats
 scripts to reproduce the analysis and other customary codes
 
 Trait-evolution analysis used 'bayou' v2.2.0, while the biogeographic reconstruction used 'BioGeoBEARS' v1.1.2
-Analyses were ran in R 4.0.5 
+Analyses were run in R 4.0.5 
